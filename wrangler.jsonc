@@ -1,0 +1,24 @@
+{
+  "name": "browser-rendering",
+  "main": "src/index.ts",
+  "workers_dev": true,
+  "compatibility_flags": [
+    "nodejs_compat_v2"
+  ],
+  "compatibility_date":"2025-03-05",
+  "upload_source_maps": true,
+  "browser": {
+    "binding": "MYBROWSER"
+  },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "BROWSER_KV_DEMO",
+      "id": "9070229439544be6a3ffa2fbda4c99af",
+      "preview_id": "df956880966b4d8382f62208be87e29e"
+    }
+  ]
+}

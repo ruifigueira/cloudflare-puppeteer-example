@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>Todo List - Cloudflare Browser Rendering</h1>
+    <form id="todo-form">
+        <label for="todo">New Todo:</label>
+        <input type="text" id="todo" name="todo" required>
+        <button type="submit">Add Todo</button>
+        <div>
+            <input type="radio" id="trace" name="type" value="trace" checked>
+            <label for="trace">Trace</label>
+            <input type="radio" id="screenshot" name="type" value="screenshot">
+            <label for="screenshot">Screenshot</label>
+        </div>
+    </form>
+
+    <p>It will open <a href="https://demo.playwright.dev/todomvc/#">TodoMVC</a> using playwright and type it for you</p>
+    <p id="loading-message" style="display: none;">Rendering...</p>
+    <h3 style="display: none;" id="trace-viewer-external">Trace viewer (<a target="_blank">open in new tab</a> or <a download>download it</a>)</h3>
+    <iframe id="trace-viewer" style="width: 100%; height: 800px; display: none;"></iframe>
+    <img id="todo-image" alt="Todo Image" style="display: none;">
+
+    <script>
+        document.getElementById('todo-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const todo = document.getElementById('todo').value;
+            const type = document.querySelector('input[name="type"]:checked').value;
+
+            const url = new URL('/api/todos', window.location.origin);
+            url.searchParams.append('todo', todo);
+            url.searchParams.append('type', type);
+
+            const img = document.getElementById('todo-image');
+            const traceViewerExternal = document.getElementById('trace-viewer-external');
+            const traceViewer = document.getElementById('trace-viewer');
+            const loadingMessage = document.getElementById('loading-message');
+            
+            img.style.display = 'none';
+            traceViewerExternal.style.display = 'none';
+            traceViewer.style.display = 'none';
+            loadingMessage.style.display = 'block';
+
+            const response = await fetch(url, { method: 'POST' });
+
+            loadingMessage.style.display = 'none';
+
+            if (response.ok) {
+                const { path } = await response.json();
+                if (type === 'trace') {
+                    const traceUrl = new URL(path, window.location.origin).href;
+                    traceViewer.style.display = 'block';
+                    traceViewerExternal.style.display = 'block';
+                    const traceViewerUrl = new URL('https://trace.playwright.dev/');
+                    traceViewerUrl.searchParams.append('trace', traceUrl);
+                    traceViewer.src = traceViewerUrl.toString();
+                    const [newTab, download] = traceViewerExternal.getElementsByTagName('a');
+                    newTab.href = traceViewerUrl.toString();
+                    download.href = traceUrl;
+                } else {
+                    img.style.display = 'block';
+                    img.src = path;
+                }
+            } else {
+                console.error('Failed to add todo');
+            }
+        });
+    </script>
+</body>
+</html>
